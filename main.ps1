@@ -5,12 +5,18 @@ Import-Module .\lib\tools.psm1 -Force
 ### Constants ###
 
 $pathToData = ".\data"
-$sortBy = 'NONE'
+$sortBy = 'DATE'
 
 ### Script ###
 
-$files = get-listFiles $pathToData
+get-listFiles $pathToData
 
-if ($sortBy -eq 'NONE') {
-    get-initialSort $files $pathToData
-}
+$treeSave = invoke-initialSort $pathToData
+
+Invoke-ResetSort $pathToData $treeSave
+
+# $files = get-listFiles $pathToData
+
+# if ($sortBy -eq 'DATE') {
+
+# }
