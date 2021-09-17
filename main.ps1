@@ -1,6 +1,7 @@
 ### Imports ###
 
 Import-Module .\lib\tools.psm1 -Force
+Import-Module .\lib\sort.psm1 -Force
 
 ### Constants ###
 
@@ -15,8 +16,8 @@ $treeSave = invoke-initialSort $pathToData
 
 Invoke-ResetSort $pathToData $treeSave
 
-# $files = get-listFiles $pathToData
+if ($sortBy -eq 'DATE') {
 
-# if ($sortBy -eq 'DATE') {
+    Invoke-SortByDate $pathToData
 
-# }
+}

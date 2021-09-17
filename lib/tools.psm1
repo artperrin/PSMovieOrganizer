@@ -46,42 +46,16 @@ function Get-ListFiles {
     return Get-ChildItem -Path $path -Recurse -File -Name | ForEach-Object {add-rootPath $path $_}
 }
 
-function Invoke-InitialSort {
+function Get-DataDate {
     param (
-        [string]
-        # root path of the files to be sorted
-        $root
+        # file name to get the date from
+        $file
     )
     <#
         .SYNOPSIS
-        moves all the given files into the root directory and removes the existing tree, returns the initial tree and mapping data
+        gets the date with the file's name (search in TMDB if not found at the end of the title), return an hashtable [date -> filename]
     #>
-    $files = get-listFiles $root
-    $newPaths = $files | Split-Path -Leaf | ForEach-Object {add-rootPath $root $_}
-    $map = @{}
-    $idx = 0
-    foreach ($file in $files) {
-        $newPath = $newPaths[$idx]
-        $null = Move-Item -Path $file -Destination $newPath 
-        $idx++
-        $map.Add((Split-Path $newPath -Leaf), $file)
-    }
-    Get-ChildItem $root -Directory | Remove-Item -Force -Recurse
-    return $map
-}
-
-function Invoke-ResetSort {
-    param (
-        [string]
-        # root dir of the data to be re-sorted
-        $root,
-        # tree to be re-created
-        $tree
-    )
-    Invoke-InitialSort $root
-    $files = Get-ListFiles $root
-    foreach ($file in $files) {
-        $baseName = Split-Path $file -Leaf
-        Move-ItemCreate $file $tree[$baseName]
-    }
+    $baseName = (get-item $file).BaseName
+    $date = [string]::join('', $baseName[-5..-2])
+    return $date
 }
