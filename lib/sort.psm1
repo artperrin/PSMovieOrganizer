@@ -11,7 +11,7 @@ function Invoke-InitialSort {
         moves all the given files into the root directory and removes the existing tree, returns the initial tree and mapping data
     #>
     $files = get-listFiles $root
-    $newPaths = $files | Split-Path -Leaf | ForEach-Object {add-rootPath $root $_}
+    $newPaths = $files | Split-Path -Leaf | ForEach-Object { add-rootPath $root $_ }
     $map = @{}
     $idx = 0
     foreach ($file in $files) {
@@ -50,10 +50,9 @@ function Invoke-SortByDate {
         .SYNOPSIS
         sorts the given root directory by date
     #>
-    $file = Get-ListFiles $root
-    $datedFiles = @{}
+    $files = Get-ListFiles $root
     foreach ($file in $files) {
-        $datedFiles.Add($file, (Get-DataDate $file))
+        # for each file, get the date and move the file
+        Move-ItemCreate $file ("$root\{0}\{1}" -f (Get-DataDate $file), (split-path $file -Leaf))
     }
-    ### TO BE CONTINUED
 }

@@ -14,10 +14,6 @@ get-listFiles $pathToData
 
 $treeSave = invoke-initialSort $pathToData
 
-Invoke-ResetSort $pathToData $treeSave
-
 if ($sortBy -eq 'DATE') {
-
     Invoke-SortByDate $pathToData
-
 }

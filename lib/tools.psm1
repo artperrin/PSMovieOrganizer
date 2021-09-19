@@ -1,3 +1,5 @@
+$APIkey = ''
+
 function Move-ItemCreate {
     param (
         [string]
@@ -11,8 +13,8 @@ function Move-ItemCreate {
         .SYNOPSIS
         moves an item from a directory to another and create subdirectories if needed
     #>
-    if(-not (Test-Path $pathTo)) {
-        $null = split-path $pathTo | New-Item -Path {$_} -ItemType Directory -Force
+    if (-not (Test-Path $pathTo)) {
+        $null = split-path $pathTo | New-Item -Path { $_ } -ItemType Directory -Force
     }
     $null = Move-Item -Path $pathFrom -Destination $pathTo
 }
@@ -43,7 +45,22 @@ function Get-ListFiles {
         .SYNOPSIS
         returns the list of files contained in a given path recursively as a list of strings
     #>
-    return Get-ChildItem -Path $path -Recurse -File -Name | ForEach-Object {add-rootPath $path $_}
+    return Get-ChildItem -Path $path -Recurse -File -Name | ForEach-Object { add-rootPath $path $_ }
+}
+
+function Invoke-tmdbAPIsearchmovie {
+    param (
+        [string]
+        # name of the movie to be searched
+        $movie
+    )
+    <#
+        Invokes the TMDB API to search for a given movie by its name
+    #>
+    $movie = ($movie.Replace(' ', '+')).Replace('_', '+')
+    $uri = "https://api.themoviedb.org/3/search/movie?api_key=$APIkey&query=$movie"
+    $res = Invoke-RestMethod $uri
+    return $res.results
 }
 
 function Get-DataDate {
@@ -55,7 +72,22 @@ function Get-DataDate {
         .SYNOPSIS
         gets the date with the file's name (search in TMDB if not found at the end of the title), return an hashtable [date -> filename]
     #>
+    # do as the date was written in the end of the file
     $baseName = (get-item $file).BaseName
     $date = [string]::join('', $baseName[-5..-2])
+
+    try { $date = [int] $date }
+    catch {
+        # if the date is not found in the file's name, invoke TMDB's API
+        $date = (Invoke-tmdbAPIsearchmovie $baseName).release_date
+        if (-not ($date.GetType().name -eq [string])) {
+            # if mutliple results are returned, choose the first one
+            $date = $date[0]
+        }
+        # format correctly
+        $date = [string]::join('', $date[0..3])
+        $date = [int] $date
+    }
+    
     return $date
 }
