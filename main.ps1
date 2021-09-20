@@ -6,7 +6,7 @@ Import-Module .\lib\sort.psm1 -Force
 ### Constants ###
 
 $pathToData = ".\data"
-$sortBy = 'DATE'
+$sortBy = 'TITLE'
 
 ### Script ###
 
@@ -16,4 +16,7 @@ $treeSave = invoke-initialSort $pathToData
 
 if ($sortBy -eq 'DATE') {
     Invoke-SortByDate $pathToData
+}
+elseif ($sortBy -eq 'TITLE') {
+    Invoke-SortByTitle $pathToData
 }

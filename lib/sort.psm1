@@ -20,7 +20,7 @@ function Invoke-InitialSort {
         $idx++
         $map.Add((Split-Path $newPath -Leaf), $file)
     }
-    Get-ChildItem $root -Directory | Remove-Item -Force -Recurse
+    $null = Get-ChildItem $root -Directory | Remove-Item -Force -Recurse
     return $map
 }
 
@@ -54,5 +54,25 @@ function Invoke-SortByDate {
     foreach ($file in $files) {
         # for each file, get the date and move the file
         Move-ItemCreate $file ("$root\{0}\{1}" -f (Get-DataDate $file), (split-path $file -Leaf))
+    }
+}
+
+function Invoke-SortByTitle {
+    param (
+        [string]
+        # root directory of the files to sort by title
+        $root
+    )
+    $files = Get-ListFiles $root
+    foreach ($file in $files) {
+        # for each file, get the first letter
+        $baseName = split-path $file -Leaf
+        if (([string]::join('', (split-path $baseName -Leaf)[0..3])).replace(' ','_') -eq 'the_') { # if the file begins with 'the ' or 'the_'
+            $letter = [string] $baseName[4] # take the first letter after 'the'
+        }
+        else {
+            $letter = [string] $baseName[0]
+        }
+        Move-ItemCreate $file ("$root\{0}\{1}" -f $letter.ToUpper(), (split-path $file -Leaf))
     }
 }
