@@ -1,4 +1,4 @@
-$APIkey = ''
+$APIkey = get-content '.\apikey.txt'
 
 function Move-ItemCreate {
     param (
