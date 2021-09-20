@@ -79,15 +79,16 @@ function Get-DataDate {
     try { $date = [int] $date }
     catch {
         # if the date is not found in the file's name, invoke TMDB's API
-        $date = (Invoke-tmdbAPIsearchmovie $baseName).release_date
+        $res = Invoke-tmdbAPIsearchmovie $baseName
+        $date = $res.release_date
         if (-not ($date.GetType().name -eq [string])) {
             # if mutliple results are returned, choose the first one
             $date = $date[0]
+            Write-Output ("Multiple movies for $baseName found... Chosen {0} released the $date!" -f $res.original_title)
         }
         # format correctly
         $date = [string]::join('', $date[0..3])
         $date = [int] $date
     }
-    
     return $date
 }

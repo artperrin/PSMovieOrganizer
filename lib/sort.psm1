@@ -1,4 +1,4 @@
-Import-Module .\lib\tools.psm1
+Import-Module .\lib\tools.psm1 -Force
 
 function Invoke-InitialSort {
     param (
@@ -53,7 +53,8 @@ function Invoke-SortByDate {
     $files = Get-ListFiles $root
     foreach ($file in $files) {
         # for each file, get the date and move the file
-        Move-ItemCreate $file ("$root\{0}\{1}" -f (Get-DataDate $file), (split-path $file -Leaf))
+        $date = (Get-DataDate $file)
+        Move-ItemCreate $file ("$root\{0}\{1}" -f $date, (split-path $file -Leaf))
     }
 }
 

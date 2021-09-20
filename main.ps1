@@ -6,7 +6,7 @@ Import-Module .\lib\sort.psm1 -Force
 ### Constants ###
 
 $pathToData = ".\data"
-$sortBy = 'TITLE'
+$sortBy = 'DATE'
 
 ### Script ###
 
