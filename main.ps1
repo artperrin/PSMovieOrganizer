@@ -10,8 +10,6 @@ $sortBy = 'DATE'
 
 ### Script ###
 
-get-listFiles $pathToData
-
 $treeSave = invoke-initialSort $pathToData
 
 if ($sortBy -eq 'DATE') {

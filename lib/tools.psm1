@@ -84,7 +84,12 @@ function Get-DataDate {
         if (-not ($date.GetType().name -eq [string])) {
             # if mutliple results are returned, choose the first one
             $date = $date[0]
-            Write-Output ("Multiple movies for $baseName found... Chosen {0} released the $date!" -f $res.original_title)
+            $others = ''
+            foreach ($movie in $res) {
+                $others += ("    '{0}' from {1}`n" -f $movie.original_title, $movie.release_date)
+            }
+            Write-Host ("Multiple movies for '$baseName' found... Chosen '{0}' released the $date! Movies found:" -f $res.original_title)
+            Write-Host $others
         }
         # format correctly
         $date = [string]::join('', $date[0..3])
