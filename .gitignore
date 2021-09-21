@@ -1,4 +1,3 @@
 .vscode
-misc
-data
+data*
 apikey.txt

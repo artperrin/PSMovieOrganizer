@@ -11,12 +11,14 @@ function Invoke-InitialSort {
         moves all the given files into the root directory and removes the existing tree, returns the initial tree and mapping data
     #>
     $files = get-listFiles $root
-    $newPaths = $files | Split-Path -Leaf | ForEach-Object { add-rootPath $root $_ }
+    $newPaths = @($files | Split-Path -Leaf | ForEach-Object { add-rootPath $root $_ })
     $map = @{}
     $idx = 0
     foreach ($file in $files) {
         $newPath = $newPaths[$idx]
-        $null = Move-Item -Path $file -Destination $newPath 
+        if ($newPath -ne $file) {
+            $null = Move-Item -Path $file -Destination $newPath 
+        }
         $idx++
         $map.Add((Split-Path $newPath -Leaf), $file)
     }

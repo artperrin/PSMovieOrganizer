@@ -1,32 +1,25 @@
 ### Imports ###
 
-Import-Module .\lib\tools.psm1 -Force
-Import-Module .\lib\sort.psm1 -Force
+Import-Module '.\lib\mainSort.psm1' -Force
+Import-Module '.\lib\tools.psm1' -Force
 
 ### Constants ###
 
-$pathToData = ".\data"
-$sortBy = 'COL'
+$confPath = '.\organizer.conf'
+$dataPath = '.\data'
+# $dataPath = $args[0]
 
 ### Script ###
 
-$treeSave = invoke-initialSort $pathToData
+$sortingOrder = @(-split ([string] (Get-Content $confPath)))
 
-if ($sortBy -eq 'DATE') {
-    Invoke-SortByDate $pathToData
-}
-elseif ($sortBy -eq 'TITLE') {
-    Invoke-SortByTitle $pathToData
-}
-elseif ($sortBy -eq 'DIR') {
-    Invoke-SortByDirector $pathToData
-}
-elseif ($sortBy -eq 'NAT') {
-    Invoke-SortByNationality $pathToData
-}
-elseif ($sortBy -eq 'GENRE') {
-    Invoke-SortByGenre $pathToData
-}
-elseif ($sortBy -eq 'COL') {
-    Invoke-SortByCollection $pathToData
+Invoke-Sort $dataPath $sortingOrder[0]
+$sortingOrder = $sortingOrder[1..$sortingOrder.Length]
+
+$data = $dataPath
+
+while ($sortingOrder.Length -gt 0) {
+    $data = $data | foreach-object {get-listdirs $_}
+    $data | ForEach-Object { Invoke-Sort $_ $sortingOrder[0] }
+    $sortingOrder = $sortingOrder[1..$sortingOrder.Length]
 }

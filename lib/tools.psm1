@@ -49,6 +49,19 @@ function Get-ListFiles {
     return Get-ChildItem -Path $path -Recurse -File -Name | ForEach-Object { add-rootPath $path $_ }
 }
 
+function Get-ListDirs {
+    param (
+        [string]
+        # path to get the list of dirs from
+        $path 
+    )
+    <#
+        .SYNOPSIS
+        returns the list of directories contained in a given path recursively as a list of strings
+    #>
+    return Get-ChildItem -Path $path -Recurse -Directory -Name | ForEach-Object { add-rootPath $path $_ }
+}
+
 function Invoke-tmdbAPIsearchmovie {
     param (
         [string]
