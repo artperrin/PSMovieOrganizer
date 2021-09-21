@@ -6,7 +6,7 @@ Import-Module .\lib\sort.psm1 -Force
 ### Constants ###
 
 $pathToData = ".\data"
-$sortBy = 'DATE'
+$sortBy = 'DIR'
 
 ### Script ###
 
@@ -17,4 +17,7 @@ if ($sortBy -eq 'DATE') {
 }
 elseif ($sortBy -eq 'TITLE') {
     Invoke-SortByTitle $pathToData
+}
+elseif ($sortBy -eq 'DIR') {
+    Invoke-SortByDirector $pathToData
 }

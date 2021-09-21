@@ -60,7 +60,21 @@ function Invoke-tmdbAPIsearchmovie {
     $movie = ($movie.Replace(' ', '+')).Replace('_', '+')
     $uri = "https://api.themoviedb.org/3/search/movie?api_key=$APIkey&query=$movie"
     $res = Invoke-RestMethod $uri
+    if ($res.total_results -eq 0) {
+        return 0
+    }
     return $res.results
+}
+
+function Invoke-tmdbAPIsearchcredits {
+    param (
+        [int]
+        # movie Id to search the credits for
+        $movieId
+    )
+    $uri = ("https://api.themoviedb.org/3/movie/{0}?api_key=$APIkey&append_to_response=credits" -f $movieId)
+    $res = Invoke-RestMethod $uri
+    return $res.credits
 }
 
 function Get-DataDate {
@@ -80,6 +94,9 @@ function Get-DataDate {
     catch {
         # if the date is not found in the file's name, invoke TMDB's API
         $res = Invoke-tmdbAPIsearchmovie $baseName
+        if ($res -eq 0) {
+            return 'Unknown'
+        }
         $date = $res.release_date
         if (-not ($date.GetType().name -eq [string])) {
             # if mutliple results are returned, choose the first one
@@ -96,4 +113,35 @@ function Get-DataDate {
         $date = [int] $date
     }
     return $date
+}
+
+function Get-Director {
+    param (
+        [string]
+        # file to find the director from
+        $file
+    )
+    $baseName = (Get-Item $file).BaseName
+    $res = Invoke-tmdbAPIsearchmovie $baseName
+    if ($res -eq 0) {
+        return 'Unknown'
+    }
+    if (($res | Measure-Object).count -gt 1) {
+        $others = ''
+        foreach ($movie in $res) {
+            $others += ("    '{0}' from {1}`n" -f $movie.original_title, $movie.release_date)
+        }
+        $res = $res[0]
+        Write-Host ("Multiple movies for '$baseName' found... Chosen '{0}' released the {1}! Movies found:" -f $res.original_title, $res.release_date)
+        Write-Host $others
+    }
+    $movieId = $res.Id
+    $credits = Invoke-tmdbAPIsearchcredits $movieId
+    $directors = @()
+    foreach ($person in $credits.crew) {
+        if ($person.job -eq 'Director') {
+            $directors += $person.original_name
+        }
+    }
+    return $directors
 }
