@@ -24,4 +24,5 @@ function Invoke-Sort {
         'ROOT' {  }
         Default { Invoke-ResetSort $pathToData $treeSave }
     }
+    return $treeSave
 }
