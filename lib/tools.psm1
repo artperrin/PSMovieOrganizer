@@ -96,6 +96,23 @@ function Invoke-tmdbAPIsearchById {
     return $res
 }
 
+function Get-ResParsed {
+    param (
+        # results of TMDB API to be parsed
+        $res,
+        [string]
+        # basename of the file
+        $baseName
+    )
+    if (($res | Measure-Object).count -gt 1) {
+        $others = $res | Select-Object -Property original_title, release_date
+        $res = $res[0]
+        Write-Host ("Multiple movies for '$baseName' found... Chose '{0}' released the {1}!`nTotal movies found:" -f $res.original_title, $res.release_date)
+        Write-Host ($others | Format-Table | Out-String)
+    }
+    return $res
+}
+
 function Get-DataDate {
     param (
         # file name to get the date from
@@ -116,17 +133,8 @@ function Get-DataDate {
         if ($res -eq 0) {
             return 'Unknown'
         }
+        $res = Get-ResParsed $res $baseName
         $date = $res.release_date
-        if (-not ($date.GetType().name -eq [string])) {
-            # if mutliple results are returned, choose the first one
-            $date = $date[0]
-            $others = ''
-            foreach ($movie in $res) {
-                $others += ("    '{0}' from {1}`n" -f $movie.original_title, $movie.release_date)
-            }
-            Write-Host ("Multiple movies for '$baseName' found... Chosen '{0}' released the $date! Movies found:" -f $res.original_title)
-            Write-Host $others
-        }
         # format correctly
         $date = [string]::join('', $date[0..3])
         $date = [int] $date
@@ -149,15 +157,7 @@ function Get-Director {
     if ($res -eq 0) {
         return 'Unknown'
     }
-    if (($res | Measure-Object).count -gt 1) {
-        $others = ''
-        foreach ($movie in $res) {
-            $others += ("    '{0}' from {1}`n" -f $movie.original_title, $movie.release_date)
-        }
-        $res = $res[0]
-        Write-Host ("Multiple movies for '$baseName' found... Chosen '{0}' released the {1}! Movies found:" -f $res.original_title, $res.release_date)
-        Write-Host $others
-    }
+    $res = Get-ResParsed $res $baseName
     $movieId = $res.Id
     $credits = Invoke-tmdbAPIsearchById $movieId -credits
     $directors = @()
@@ -182,17 +182,9 @@ function Get-Nationality {
     $baseName = (Get-Item $file).BaseName
     $res = Invoke-tmdbAPIsearchmovie $baseName
     if ($res -eq 0) {
-        return 'Unknown'
+        return 'Unkown'
     }
-    if (($res | Measure-Object).count -gt 1) {
-        $others = ''
-        foreach ($movie in $res) {
-            $others += ("    '{0}' from {1}`n" -f $movie.original_title, $movie.release_date)
-        }
-        $res = $res[0]
-        Write-Host ("Multiple movies for '$baseName' found... Chosen '{0}' released the {1}! Movies found:" -f $res.original_title, $res.release_date)
-        Write-Host $others
-    }
+    $res = Get-ResParsed $res $baseName
     $movieId = $res.Id
     $nat = Invoke-tmdbAPIsearchById $movieId -nationality
     return $nat
@@ -213,15 +205,7 @@ function Get-Genre {
     if ($res -eq 0) {
         return 'Unknown'
     }
-    if (($res | Measure-Object).count -gt 1) {
-        $others = ''
-        foreach ($movie in $res) {
-            $others += ("    '{0}' from {1}`n" -f $movie.original_title, $movie.release_date)
-        }
-        $res = $res[0]
-        Write-Host ("Multiple movies for '$baseName' found... Chosen '{0}' released the {1}! Movies found:" -f $res.original_title, $res.release_date)
-        Write-Host $others
-    }
+    $res = Get-ResParsed $res $baseName
     $genre_table = Import-Csv -Path $GenreTableFilePath
     $genres = ($genre_table | where-object {$_.id -in $res.genre_ids} | select-object -property name).name
     return $genres
@@ -242,15 +226,7 @@ function Get-Collection {
     if ($res -eq 0) {
         return $null
     }
-    if (($res | Measure-Object).count -gt 1) {
-        $others = ''
-        foreach ($movie in $res) {
-            $others += ("    '{0}' from {1}`n" -f $movie.original_title, $movie.release_date)
-        }
-        $res = $res[0]
-        Write-Host ("Multiple movies for '$baseName' found... Chosen '{0}' released the {1}! Movies found:" -f $res.original_title, $res.release_date)
-        Write-Host $others
-    }
+    $res = Get-ResParsed $res $baseName $null
     $movieId = $res.Id
     $col = Invoke-tmdbAPIsearchById $movieId -collection
     if ($null -ne $col) {
