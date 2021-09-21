@@ -167,3 +167,20 @@ function Invoke-SortByGenre {
         Move-ItemCreate $file ("$root\{0}\{1}" -f $pathName, (split-path $file -Leaf))
     }
 }
+
+function Invoke-SortByCollection {
+    param (
+        [string]
+        # root directory of the files to sort by title
+        $root
+    )
+    <#
+        .SYNOPSIS
+        Sorts the files by collections by finding it with TMDB's API
+    #>
+    $files = get-ListFiles $root
+    foreach ($file in $files) {
+        $collection = Get-Collection $file
+        Move-ItemCreate $file ("$root\{0}\{1}" -f $collection, (split-path $file -Leaf))
+    }
+}

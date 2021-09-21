@@ -67,26 +67,33 @@ function Invoke-tmdbAPIsearchmovie {
     return $res.results
 }
 
-function Invoke-tmdbAPIsearchcredits {
-    param (
-        [int]
-        # movie Id to search the credits for
-        $movieId
-    )
-    $uri = ("https://api.themoviedb.org/3/movie/{0}?api_key=$APIkey&append_to_response=credits" -f $movieId)
-    $res = Invoke-RestMethod $uri
-    return $res.credits
-}
-
-function Invoke-tmdbAPIsearchnationality {
+function Invoke-tmdbAPIsearchById {
     param (
         [int]
         # movie Id to search the nationality of
-        $movieId
+        $movieId,
+        [switch]
+        # whether to seek the credits
+        $credits,
+        [switch]
+        # whether to seek the nationality
+        $nationality,
+        [switch]
+        # whether to seek the collection
+        $collection
     )
-    $uri = ("https://api.themoviedb.org/3/movie/{0}?api_key=$APIkey" -f $movieId)
+    $uri = ("https://api.themoviedb.org/3/movie/{0}?api_key=$APIkey&append_to_response=credits" -f $movieId)
     $res = Invoke-RestMethod $uri
-    return $res.production_countries.name
+    if ($credits) {
+        $res = $res.credits
+    }
+    elseif ($nationality) {
+        $res = $res.production_countries.name
+    }
+    elseif ($collection) {
+        $res = $res.belongs_to_collection
+    }
+    return $res
 }
 
 function Get-DataDate {
@@ -152,7 +159,7 @@ function Get-Director {
         Write-Host $others
     }
     $movieId = $res.Id
-    $credits = Invoke-tmdbAPIsearchcredits $movieId
+    $credits = Invoke-tmdbAPIsearchById $movieId -credits
     $directors = @()
     foreach ($person in $credits.crew) {
         if ($person.job -eq 'Director') {
@@ -187,7 +194,7 @@ function Get-Nationality {
         Write-Host $others
     }
     $movieId = $res.Id
-    $nat = Invoke-tmdbAPIsearchnationality $movieId
+    $nat = Invoke-tmdbAPIsearchById $movieId -nationality
     return $nat
 }
 
@@ -218,4 +225,36 @@ function Get-Genre {
     $genre_table = Import-Csv -Path $GenreTableFilePath
     $genres = ($genre_table | where-object {$_.id -in $res.genre_ids} | select-object -property name).name
     return $genres
+}
+
+function Get-Collection {
+    param (
+        [string]
+        # file to find the director from
+        $file
+    )
+    <#
+        .SYNOPSIS
+        Gets the genre of the given file
+    #>
+    $baseName = (Get-Item $file).BaseName
+    $res = Invoke-tmdbAPIsearchmovie $baseName
+    if ($res -eq 0) {
+        return $null
+    }
+    if (($res | Measure-Object).count -gt 1) {
+        $others = ''
+        foreach ($movie in $res) {
+            $others += ("    '{0}' from {1}`n" -f $movie.original_title, $movie.release_date)
+        }
+        $res = $res[0]
+        Write-Host ("Multiple movies for '$baseName' found... Chosen '{0}' released the {1}! Movies found:" -f $res.original_title, $res.release_date)
+        Write-Host $others
+    }
+    $movieId = $res.Id
+    $col = Invoke-tmdbAPIsearchById $movieId -collection
+    if ($null -ne $col) {
+        $col = $col.name
+    }
+    return $col
 }

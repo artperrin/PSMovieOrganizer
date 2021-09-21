@@ -6,7 +6,7 @@ Import-Module .\lib\sort.psm1 -Force
 ### Constants ###
 
 $pathToData = ".\data"
-$sortBy = 'GENRE'
+$sortBy = 'COL'
 
 ### Script ###
 
@@ -26,4 +26,7 @@ elseif ($sortBy -eq 'NAT') {
 }
 elseif ($sortBy -eq 'GENRE') {
     Invoke-SortByGenre $pathToData
+}
+elseif ($sortBy -eq 'COL') {
+    Invoke-SortByCollection $pathToData
 }
