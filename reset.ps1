@@ -1,5 +1,9 @@
 Import-Module '.\lib\sort.psm1'
 
-$import = Import-Clixml "last_tree_save.xml"
-
-Invoke-ResetSort -root $import.root -tree $import.tree
+try {
+    $import = Import-Clixml "last_tree_save.xml"
+    Invoke-ResetSort -root $import.root -tree $import.tree
+}
+catch {
+    Write-Host "Save not found!"
+}
