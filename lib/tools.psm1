@@ -1,4 +1,5 @@
 $APIkey = get-content '.\apikey.txt'
+$GenreTableFilePath = '.\lib\genres_table.csv'
 
 function Move-ItemCreate {
     param (
@@ -214,7 +215,7 @@ function Get-Genre {
         Write-Host ("Multiple movies for '$baseName' found... Chosen '{0}' released the {1}! Movies found:" -f $res.original_title, $res.release_date)
         Write-Host $others
     }
-    $genre_table = Import-Csv -Path ".\lib\genres_table.csv"
+    $genre_table = Import-Csv -Path $GenreTableFilePath
     $genres = ($genre_table | where-object {$_.id -in $res.genre_ids} | select-object -property name).name
     return $genres
 }
