@@ -41,7 +41,7 @@ For all these criteria (except the DATE if given in the filename and the TITLE),
 
 ## Example
 
-I got some movies in my `\Films` directory:
+I got some movies in my `\Films` directory (these are `.txt` files actually to mimic my tree):
 
 ```
 │   A Fantastic Fear of Everything (2012) [Vosten].txt
@@ -182,3 +182,4 @@ I obtain the following tree:
             The Void (2016) [Vosten].txt
             Thoroughbreds (2017) [Vosten].txt
 ```
+The `unknown`-sorted movies were not found on TMDB.
