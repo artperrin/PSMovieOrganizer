@@ -6,8 +6,7 @@ Import-Module '.\lib\tools.psm1' -Force
 ### Constants ###
 
 $confPath = '.\organizer.conf'
-$dataPath = '.\data'
-# $dataPath = $args[0]
+$dataPath = 'Films'
 
 ### Script ###
 

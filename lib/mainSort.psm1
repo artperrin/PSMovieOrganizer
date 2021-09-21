@@ -11,31 +11,17 @@ function Invoke-Sort {
         # sorting type
         $sortBy
     )
+    
     $treeSave = invoke-initialSort $pathToData
 
-    if ($sortBy -eq 'DATE') {
-        Invoke-SortByDate $pathToData
+    switch ($sortBy) {
+        'DATE' { Invoke-SortByDate $pathToData }
+        'TITLE' { Invoke-SortByTitle $pathToData }
+        'DIRECTOR' { Invoke-SortByDirector $pathToData }
+        'NATIONALITY' { Invoke-SortByNationality $pathToData }
+        'GENRE' { Invoke-SortByGenre $pathToData }
+        'COLLECTION' { Invoke-SortByCollection $pathToData }
+        'ROOT' {  }
+        Default { Invoke-ResetSort $pathToData $treeSave }
     }
-    elseif ($sortBy -eq 'TITLE') {
-        Invoke-SortByTitle $pathToData
-    }
-    elseif ($sortBy -eq 'DIR') {
-        Invoke-SortByDirector $pathToData
-    }
-    elseif ($sortBy -eq 'NAT') {
-        Invoke-SortByNationality $pathToData
-    }
-    elseif ($sortBy -eq 'GENRE') {
-        Invoke-SortByGenre $pathToData
-    }
-    elseif ($sortBy -eq 'COL') {
-        Invoke-SortByCollection $pathToData
-    }
-    elseif ($sortBy -eq 'ROOT') {
-        
-    }
-    else {
-        Invoke-ResetSort $pathToData $treeSave
-    }
-
 }

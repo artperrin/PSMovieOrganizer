@@ -74,6 +74,10 @@ function Invoke-SortByTitle {
             # if the file begins with 'the ' or 'the_'
             $letter = [string] $baseName[4] # take the first letter after 'the'
         }
+        elseif (([string]::join('', (split-path $baseName -Leaf)[0..2])).replace(' ', '_') -eq 'le_') {
+            # if the file begins with 'le ' or 'le_'
+            $letter = [string] $baseName[3] # take the first letter after 'le'
+        }
         else {
             $letter = [string] $baseName[0]
         }
@@ -128,7 +132,7 @@ function Invoke-SortByNationality {
         if (($nat | Measure-Object).count -gt 1) {
             # if there are more than one director, just take the family names
             $pathName = ''
-            foreach ($country in $nat) {
+            foreach ($country in ($nat | Sort-Object)) {
                 $pathName += "$country & "
             }
             # erase the last ' &' symbol

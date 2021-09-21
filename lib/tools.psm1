@@ -17,7 +17,7 @@ function Move-ItemCreate {
     if (-not (Test-Path $pathTo)) {
         $null = split-path $pathTo | New-Item -Path { $_ } -ItemType Directory -Force
     }
-    $null = Move-Item -Path $pathFrom -Destination $pathTo
+    $null = Move-Item -LiteralPath $pathFrom -Destination $pathTo
 }
 
 function Add-RootPath {
@@ -59,7 +59,7 @@ function Get-ListDirs {
         .SYNOPSIS
         returns the list of directories contained in a given path recursively as a list of strings
     #>
-    return Get-ChildItem -Path $path -Recurse -Directory -Name | ForEach-Object { add-rootPath $path $_ }
+    return Get-ChildItem -Path $path -Directory -Name | ForEach-Object { add-rootPath $path $_ }
 }
 
 function Invoke-tmdbAPIsearchmovie {
@@ -72,8 +72,13 @@ function Invoke-tmdbAPIsearchmovie {
         Invokes the TMDB API to search for a given movie by its name
     #>
     $movie = ($movie.Replace(' ', '+')).Replace('_', '+')
+    if ($movie -match '\(([0-9]{4})\)') {
+        $sliceIdx = $movie.IndexOf($Matches[0])
+        $movie = [string]::join('', $movie[0..($sliceIdx-2)])
+    }
     $uri = "https://api.themoviedb.org/3/search/movie?api_key=$APIkey&query=$movie"
-    $res = Invoke-RestMethod $uri
+    try {$res = Invoke-RestMethod $uri}
+    catch {return 0}
     if ($res.total_results -eq 0) {
         return 0
     }
@@ -96,7 +101,8 @@ function Invoke-tmdbAPIsearchById {
         $collection
     )
     $uri = ("https://api.themoviedb.org/3/movie/{0}?api_key=$APIkey&append_to_response=credits" -f $movieId)
-    $res = Invoke-RestMethod $uri
+    try {$res = Invoke-RestMethod $uri}
+    catch {return 0}
     if ($credits) {
         $res = $res.credits
     }
@@ -137,10 +143,11 @@ function Get-DataDate {
     #>
     # do as the date was written in the end of the file
     $baseName = (get-item $file).BaseName
-    $date = [string]::join('', $baseName[-5..-2])
 
-    try { $date = [int] $date }
-    catch {
+    if ($baseName -match "([0-9]{4})") {
+        $date = $Matches[0]
+    }
+    else {
         # if the date is not found in the file's name, invoke TMDB's API
         $res = Invoke-tmdbAPIsearchmovie $baseName
         if ($res -eq 0) {
@@ -237,7 +244,7 @@ function Get-Collection {
     $baseName = (Get-Item $file).BaseName
     $res = Invoke-tmdbAPIsearchmovie $baseName
     if ($res -eq 0) {
-        return $null
+        return 'Others'
     }
     $res = Get-ResParsed $res $baseName $null
     $movieId = $res.Id

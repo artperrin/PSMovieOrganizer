@@ -1,3 +1,4 @@
 .vscode
 data*
 apikey.txt
+cloneData.ps1
