@@ -109,3 +109,61 @@ function Invoke-SortByDirector {
         Move-ItemCreate $file ("$root\{0}\{1}" -f $pathName, (split-path $file -Leaf))
     }
 }
+
+function Invoke-SortByNationality {
+    param (
+        [string]
+        # root directory of the files to sort by title
+        $root
+    )
+    <#
+        .SYNOPSIS
+        Sorts the files by nationality by finding it with TMDB's API
+    #>
+    $files = Get-ListFiles $root
+    foreach ($file in $files) {
+        $nat = Get-Nationality $file
+        if (($nat | Measure-Object).count -gt 1) {
+            # if there are more than one director, just take the family names
+            $pathName = ''
+            foreach ($country in $nat) {
+                $pathName += "$country & "
+            }
+            # erase the last ' &' symbol
+            $pathName = $pathName.Substring(0, $pathName.Length - 3)
+        }
+        else {
+            $pathName = $nat
+        }
+        Move-ItemCreate $file ("$root\{0}\{1}" -f $pathName, (split-path $file -Leaf))
+    }
+}
+
+function Invoke-SortByGenre {
+    param (
+        [string]
+        # root directory of the files to sort by title
+        $root
+    )
+    <#
+        .SYNOPSIS
+        Sorts the files by genre by finding it with TMDB's API
+    #>
+    $files = Get-ListFiles $root
+    foreach ($file in $files) {
+        $genre = Get-Genre $file
+        if (($genre | Measure-Object).count -gt 1) {
+            # if there are more than one director, just take the family names
+            $pathName = ''
+            foreach ($singleGenre in $genre) {
+                $pathName += "$singleGenre & "
+            }
+            # erase the last ' &' symbol
+            $pathName = $pathName.Substring(0, $pathName.Length - 3)
+        }
+        else {
+            $pathName = $genre
+        }
+        Move-ItemCreate $file ("$root\{0}\{1}" -f $pathName, (split-path $file -Leaf))
+    }
+}

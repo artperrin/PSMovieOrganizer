@@ -77,6 +77,17 @@ function Invoke-tmdbAPIsearchcredits {
     return $res.credits
 }
 
+function Invoke-tmdbAPIsearchnationality {
+    param (
+        [int]
+        # movie Id to search the nationality of
+        $movieId
+    )
+    $uri = ("https://api.themoviedb.org/3/movie/{0}?api_key=$APIkey" -f $movieId)
+    $res = Invoke-RestMethod $uri
+    return $res.production_countries.name
+}
+
 function Get-DataDate {
     param (
         # file name to get the date from
@@ -121,6 +132,10 @@ function Get-Director {
         # file to find the director from
         $file
     )
+    <#
+        .SYNOPSIS
+        Gets the list of directors for the given file
+    #>
     $baseName = (Get-Item $file).BaseName
     $res = Invoke-tmdbAPIsearchmovie $baseName
     if ($res -eq 0) {
@@ -144,4 +159,62 @@ function Get-Director {
         }
     }
     return $directors
+}
+
+function Get-Nationality {
+    param (
+        [string]
+        # file to find the director from
+        $file
+    )
+    <#
+        .SYNOPSIS
+        Gets the nationality of the given file
+    #>
+    $baseName = (Get-Item $file).BaseName
+    $res = Invoke-tmdbAPIsearchmovie $baseName
+    if ($res -eq 0) {
+        return 'Unknown'
+    }
+    if (($res | Measure-Object).count -gt 1) {
+        $others = ''
+        foreach ($movie in $res) {
+            $others += ("    '{0}' from {1}`n" -f $movie.original_title, $movie.release_date)
+        }
+        $res = $res[0]
+        Write-Host ("Multiple movies for '$baseName' found... Chosen '{0}' released the {1}! Movies found:" -f $res.original_title, $res.release_date)
+        Write-Host $others
+    }
+    $movieId = $res.Id
+    $nat = Invoke-tmdbAPIsearchnationality $movieId
+    return $nat
+}
+
+function Get-Genre {
+    param (
+        [string]
+        # file to find the director from
+        $file
+    )
+    <#
+        .SYNOPSIS
+        Gets the genre of the given file
+    #>
+    $baseName = (Get-Item $file).BaseName
+    $res = Invoke-tmdbAPIsearchmovie $baseName
+    if ($res -eq 0) {
+        return 'Unknown'
+    }
+    if (($res | Measure-Object).count -gt 1) {
+        $others = ''
+        foreach ($movie in $res) {
+            $others += ("    '{0}' from {1}`n" -f $movie.original_title, $movie.release_date)
+        }
+        $res = $res[0]
+        Write-Host ("Multiple movies for '$baseName' found... Chosen '{0}' released the {1}! Movies found:" -f $res.original_title, $res.release_date)
+        Write-Host $others
+    }
+    $genre_table = Import-Csv -Path ".\lib\genres_table.csv"
+    $genres = ($genre_table | where-object {$_.id -in $res.genre_ids} | select-object -property name).name
+    return $genres
 }

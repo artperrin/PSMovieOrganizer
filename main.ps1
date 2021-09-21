@@ -6,7 +6,7 @@ Import-Module .\lib\sort.psm1 -Force
 ### Constants ###
 
 $pathToData = ".\data"
-$sortBy = 'DIR'
+$sortBy = 'GENRE'
 
 ### Script ###
 
@@ -20,4 +20,10 @@ elseif ($sortBy -eq 'TITLE') {
 }
 elseif ($sortBy -eq 'DIR') {
     Invoke-SortByDirector $pathToData
+}
+elseif ($sortBy -eq 'NAT') {
+    Invoke-SortByNationality $pathToData
+}
+elseif ($sortBy -eq 'GENRE') {
+    Invoke-SortByGenre $pathToData
 }
