@@ -73,14 +73,15 @@ function Invoke-tmdbAPIsearchmovie {
     #>
     $movie = ($movie.Replace(' ', '+')).Replace('_', '+')
     if ($movie -match '\(([0-9]{4})\)') {
+        # remove the date which can cause troubles to the search engine
         $sliceIdx = $movie.IndexOf($Matches[0])
-        $movie = [string]::join('', $movie[0..($sliceIdx-2)])
+        $movie = [string]::join('', $movie[0..($sliceIdx - 2)])
     }
     $uri = "https://api.themoviedb.org/3/search/movie?api_key=$APIkey&query=$movie"
-    try {$res = Invoke-RestMethod $uri}
-    catch {return 0}
+    try { $res = Invoke-RestMethod $uri }
+    catch { return 0 } # if an error occured, return 0
     if ($res.total_results -eq 0) {
-        return 0
+        return 0 # if no results found, return 0
     }
     return $res.results
 }
@@ -101,8 +102,8 @@ function Invoke-tmdbAPIsearchById {
         $collection
     )
     $uri = ("https://api.themoviedb.org/3/movie/{0}?api_key=$APIkey&append_to_response=credits" -f $movieId)
-    try {$res = Invoke-RestMethod $uri}
-    catch {return 0}
+    try { $res = Invoke-RestMethod $uri }
+    catch { return 0 }
     if ($credits) {
         $res = $res.credits
     }
@@ -226,8 +227,13 @@ function Get-Genre {
         return 'Unknown'
     }
     $res = Get-ResParsed $res $baseName
-    $genre_table = Import-Csv -Path $GenreTableFilePath
-    $genres = ($genre_table | where-object {$_.id -in $res.genre_ids} | select-object -property name).name
+    if (($res.genre_ids | Measure-Object).count -gt 0) {
+        $genre_table = Import-Csv -Path $GenreTableFilePath
+        $genres = ($genre_table | where-object { $_.id -in $res.genre_ids } | select-object -property name).name
+    }
+    else {
+        $genres = 'Unknown'
+    }
     return $genres
 }
 
@@ -251,6 +257,9 @@ function Get-Collection {
     $col = Invoke-tmdbAPIsearchById $movieId -collection
     if ($null -ne $col) {
         $col = $col.name
+    }
+    else {
+        $col = 'Others'
     }
     return $col
 }
